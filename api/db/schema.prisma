@@ -1,0 +1,108 @@
+// Don't forget to tell Prisma about your edits to this file using
+// `yarn rw prisma migrate dev` or `yarn rw prisma db push`.
+// `migrate` is like committing while `push` is for prototyping.
+// Read more about both here:
+// https://www.prisma.io/docs/orm/prisma-migrate
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = "native"
+}
+
+model User {
+  id Int @id @default(autoincrement())
+
+  username String @unique
+  email    String @unique
+
+  hashedPassword      String
+  salt                String
+  resetToken          String?
+  resetTokenExpiresAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  followers User[] @relation("UserFollows")
+  following User[] @relation("UserFollows")
+
+  Like  Like[]
+  posts Post[]
+  fits  Fit[]
+}
+
+model Like {
+  id Int @id
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  createdAt DateTime @default(now())
+
+  Post   Post? @relation(fields: [postId], references: [id])
+  postId Int?
+}
+
+model Headwear {
+  id        Int      @id @default(autoincrement())
+  imageUrl  String
+  createdAt DateTime @default(now())
+  Fit       Fit[]
+}
+
+model Shirt {
+  id        Int      @id @default(autoincrement())
+  imageUrl  String
+  createdAt DateTime @default(now())
+  Fit       Fit[]
+}
+
+model Pant {
+  id        Int      @id @default(autoincrement())
+  imageUrl  String
+  createdAt DateTime @default(now())
+  Fit       Fit[]
+}
+
+model Shoes {
+  id        Int      @id @default(autoincrement())
+  imageUrl  String
+  createdAt DateTime @default(now())
+  Fit       Fit[]
+}
+
+model Fit {
+  id Int @id
+
+  top   Headwear? @relation(fields: [headwearId], references: [id])
+  shirt Shirt     @relation(fields: [shirtId], references: [id])
+  pants Pant      @relation(fields: [pantId], references: [id])
+  shoes Shoes     @relation(fields: [shoesId], references: [id])
+
+  createdAt  DateTime @default(now())
+  Post       Post[]
+  User       User?    @relation(fields: [userId], references: [id])
+  userId     Int?
+  headwearId Int?
+  shirtId    Int
+  pantId     Int
+  shoesId    Int
+}
+
+model Post {
+  id Int @id
+
+  fit   Fit @relation(fields: [fitId], references: [id])
+  fitId Int
+
+  likes Like[]
+
+  createdAt DateTime @default(now())
+
+  User   User? @relation(fields: [userId], references: [id])
+  userId Int?
+}
